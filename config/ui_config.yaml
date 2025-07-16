@@ -1,0 +1,127 @@
+# Streamlit UI Configuration
+# Separate from core API/CLI functionality
+
+streamlit_app:
+  general:
+    app_title: "Financial Analyst AI"
+    app_description: "Multi-Turn Conversation Interface for Financial Analysis"
+    theme: "light"
+    
+  api_integration:
+    base_url: "http://localhost:8000"
+    timeout_seconds: 60
+    retry_attempts: 3
+    
+  pages:
+    conversation:
+      title: "💬 Multi-Turn Chat"
+      description: "Interactive financial analysis conversations"
+      enable_context_display: true
+      show_token_metrics: true
+      
+    analysis:
+      title: "📊 File Analysis"
+      description: "Upload and analyze financial data"
+      enable_method_selection: true
+      show_visualization: true
+      
+    admin:
+      title: "⚙️ Admin Panel"
+      description: "System configuration and monitoring"
+      require_authentication: true
+      
+    api_testing:
+      title: "🔧 API Testing"
+      description: "Test API endpoints directly"
+      enable_curl_generation: true
+
+  components:
+    chat_interface:
+      message_bubble_style: "modern"
+      enable_markdown_rendering: true
+      show_timestamps: true
+      enable_copy_button: true
+      max_message_height: 400
+      
+    file_uploader:
+      drag_drop_text: "Drag and drop your CSV/Excel file here"
+      supported_formats_help: "Supported: CSV, XLSX, XLS files up to 10MB"
+      show_data_preview: true
+      preview_max_rows: 10
+      
+    admin_controls:
+      config_editor_theme: "monokai"
+      enable_live_reload: false
+      show_change_history: true
+      backup_configs: true
+
+  styling:
+    primary_color: "#1f77b4"
+    secondary_color: "#ff7f0e"
+    background_color: "#ffffff"
+    text_color: "#262730"
+    
+    chat_bubbles:
+      user_color: "#e3f2fd"
+      assistant_color: "#f5f5f5"
+      border_radius: "10px"
+      
+    custom_css: |
+      .main-header { 
+        font-size: 2.5rem; 
+        color: #1f77b4; 
+        margin-bottom: 2rem; 
+        text-align: center;
+      }
+      .chat-message { 
+        padding: 1rem; 
+        margin: 0.5rem 0; 
+        border-radius: 10px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .user-message { 
+        background-color: #e3f2fd; 
+        margin-left: 20%;
+      }
+      .assistant-message { 
+        background-color: #f5f5f5; 
+        margin-right: 20%;
+      }
+      .token-counter { 
+        font-size: 0.8rem; 
+        color: #666; 
+        text-align: right;
+        margin-top: 0.5rem;
+      }
+      .admin-section {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+# Sample data for testing
+sample_data:
+  demo_files:
+    - name: "NVIDIA_sample.csv"
+      description: "Sample NVIDIA stock data with anomalies"
+      path: "./data/sample_prompts/nvidia_sample.csv"
+      
+    - name: "AAPL_sample.csv" 
+      description: "Apple stock data example"
+      path: "./data/sample_prompts/aapl_sample.csv"
+
+  demo_queries:
+    - "Analyze the anomalies in this dataset and explain the potential causes"
+    - "What trading opportunities do these anomalies present?"
+    - "How do these anomalies correlate with market events?"
+    - "What risk management strategies would you recommend?"
+
+# Feature flags for gradual rollout
+feature_flags:
+  enable_multi_turn_chat: true
+  enable_file_upload: true
+  enable_admin_panel: true
+  enable_api_testing: false
+  enable_conversation_export: true
+  enable_session_sharing: false

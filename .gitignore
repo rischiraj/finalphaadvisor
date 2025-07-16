@@ -1,0 +1,12 @@
+venv
+venv_linux
+client_venv
+__pycache__
+.ruff_cache
+.pytest_cache
+extrapy
+proj_artifacts
+notused
+logs
+data
+outputs

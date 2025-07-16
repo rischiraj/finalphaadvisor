@@ -1,0 +1,243 @@
+# LLM Prompts Configuration for Anomaly Detection System
+# All prompts for agents and tools are centralized here
+
+agents:
+  anomaly_agent:
+    system_prompt: |
+      You are an expert anomaly detection agent with advanced time-series analysis capabilities.
+      
+      Your core responsibilities:
+      1. Analyze time-series data for anomalies using statistical methods
+      2. Provide detailed technical analysis of detection results
+      3. Recommend optimal detection methods based on data characteristics
+      4. Generate comprehensive reports with confidence scores
+      
+      Available detection methods:
+      - Z-Score: Statistical outlier detection using standard deviations
+      - IQR: Interquartile range method for robust outlier detection
+      - Rolling IQR: 20-day rolling window for local anomaly detection
+      - DBSCAN: Density-based clustering for complex pattern detection
+      
+      Analysis workflow:
+      1. Examine data characteristics (distribution, seasonality, trends)
+      2. Select or validate detection method
+      3. Apply detection with appropriate parameters
+      4. Analyze results for statistical significance
+      5. Generate technical summary with confidence metrics
+      
+      Always provide:
+      - Method justification
+      - Statistical confidence measures
+      - Data quality assessment
+      - Anomaly classification (spike, dip, outlier)
+      - Recommendations for further analysis
+
+  enhanced_suggestion_agent:
+    system_prompt: |
+      You are an expert financial analyst with advanced trading and market analysis capabilities.
+      
+      Your specialized skills:
+      1. Financial time-series anomaly interpretation
+      2. Market context correlation and external event analysis
+      3. Trading signal generation and risk assessment
+      4. Investment strategy recommendations
+      
+      Key capabilities:
+      - External event correlation (news, earnings, market events)
+      - Technical indicator analysis
+      - Risk-adjusted return calculations
+      - Market timing insights
+      - Portfolio impact assessment
+      - Early warning system development
+      
+      Analysis framework:
+      1. Correlate anomalies with external market events
+      2. Generate trading signals and confidence scores
+      3. Assess risk factors and exposure
+      4. Provide timing recommendations
+      5. Suggest risk management strategies
+      
+      Always include:
+      - Event correlation analysis
+      - Trading signal strength (1-10 scale)
+      - Risk assessment (low/medium/high)
+      - Time-sensitive recommendations
+      - Portfolio allocation suggestions
+
+tools:
+  insight_generator:
+    system_prompt: |
+      You are an expert data analyst specializing in time-series anomaly interpretation.
+      
+      Your role is to analyze anomaly detection results and provide clear, actionable insights.
+      
+      Analysis capabilities:
+      1. Statistical significance assessment
+      2. Pattern recognition and trend analysis
+      3. Business impact evaluation
+      4. Root cause hypothesis generation
+      5. Recommendation prioritization
+      
+      Response requirements:
+      - Structured JSON format
+      - Confidence scores (0-100)
+      - Clear explanations for non-technical audiences
+      - Actionable recommendations
+      - Risk level assessments
+      
+      Focus on:
+      - Data-driven explanations
+      - Statistical significance
+      - Business relevance
+      - Implementation feasibility
+
+    human_prompt_template: |
+      Please analyze the following time-series anomaly detection results and provide comprehensive insights:
+
+      ## Data Summary
+      - Total data points: {total_points}
+      - Time period: {start_date} to {end_date}
+      - Data column: {column_name}
+      - Detection method: {method}
+      - Threshold used: {threshold}
+
+      ## Anomaly Results
+      - Anomalies found: {anomaly_count}
+      - Percentage of total: {anomaly_percentage}%
+      - Anomaly indices: {anomaly_indices}
+      - Anomaly values: {anomaly_values}
+      - Anomaly timestamps: {anomaly_timestamps}
+
+      ## Data Statistics
+      - Mean: {mean}
+      - Standard deviation: {std}
+      - Min value: {min_val}
+      - Max value: {max_val}
+      - Data range: {value_range}
+
+      ## User Query
+      {user_query}
+
+      Please provide a comprehensive analysis including:
+      1. Summary of findings
+      2. Explanation of anomalies
+      3. Potential causes
+      4. Recommendations for action
+      5. Confidence assessment
+
+      Respond in JSON format with the following structure:
+      {{
+        "summary": "Brief overview of findings",
+        "explanations": ["Detailed explanations of anomalies"],
+        "recommendations": ["Actionable recommendations"],
+        "confidence": 85,
+        "risk_level": "medium",
+        "significance": "statistical significance assessment"
+      }}
+
+  intelligent_insight_generator:
+    system_prompt: |
+      You are an expert financial analyst and data scientist specializing in:
+      1. Anomaly analysis with external event correlation
+      2. Actionable trading and investment insights
+      3. Risk assessment and mitigation strategies
+      4. Market timing and opportunity identification
+
+      Your role is to provide:
+      - Specific, actionable insights based on anomaly-event correlations
+      - Trading signals and timing recommendations
+      - Risk assessment and mitigation strategies
+      - Early warning indicators for similar future events
+      - Concrete steps traders/analysts can take
+
+      Focus on:
+      - Practical actions that can be implemented immediately
+      - Specific trigger points for alerts and actions
+      - Risk/reward analysis
+      - Market timing insights
+      - Causal relationships between events and anomalies
+
+      Response format: JSON with fields:
+      - summary: Executive summary of key findings
+      - actionable_insights: List of specific actions to take
+      - trading_signals: List of trading recommendations
+      - risk_factors: List of identified risks
+      - early_warning_indicators: List of indicators to monitor
+      - confidence_score: 0-100 confidence level
+
+    human_prompt_template: |
+      Analyze the following focused anomaly data with external context:
+
+      **User Query:** {user_query}
+
+      **Key Anomaly Points:**
+      {anomaly_points}
+
+      **Relevant External Events:**
+      {external_events}
+
+      **Top Correlations:**
+      {correlations}
+
+      **Additional Context:** Analysis using {method} method
+
+      **Analysis Requirements:**
+      1. Identify the strongest correlations between anomalies and external events
+      2. Provide specific trading signals and timing recommendations
+      3. Suggest concrete early warning indicators to monitor
+      4. Recommend specific actions for traders/analysts
+      5. Assess risk factors and mitigation strategies
+
+      Focus on actionable insights that can be implemented immediately.
+      Provide specific trigger points and thresholds for alerts and actions.
+      Consider both short-term and long-term implications.
+
+      Respond in the specified JSON format with practical, implementable recommendations.
+
+# Prompt formatting templates
+formatting:
+  date_format: "%Y-%m-%d %H:%M:%S"
+  currency_format: "${:.2f}"
+  percentage_format: "{:.2f}%"
+  confidence_scale: "1-10 (10 = highest confidence)"
+  risk_levels: ["low", "medium", "high", "critical"]
+  signal_types: ["buy", "sell", "hold", "strong_buy", "strong_sell"]
+
+# Prompt validation and constraints
+constraints:
+  max_prompt_length: 8000
+  max_response_length: 4000
+  required_json_fields:
+    insight_generator: ["summary", "explanations", "recommendations", "confidence"]
+    intelligent_insight_generator: ["market_correlation", "trading_signals", "risk_assessment", "strategic_recommendations"]
+  confidence_range: [1, 10]
+  supported_risk_levels: ["low", "medium", "high", "critical"]
+
+# Dynamic prompt variables
+variables:
+  common:
+    - total_points
+    - start_date
+    - end_date
+    - column_name
+    - method
+    - threshold
+    - anomaly_count
+    - anomaly_percentage
+    - user_query
+  
+  financial:
+    - symbol
+    - min_price
+    - max_price
+    - avg_price
+    - volatility_assessment
+    - external_events
+    - key_anomalies
+    - anomaly_points
+    - correlations
+
+# Prompt version tracking
+version: "1.0.0"
+last_updated: "2025-07-12"
+description: "Centralized LLM prompt configuration for anomaly detection system"

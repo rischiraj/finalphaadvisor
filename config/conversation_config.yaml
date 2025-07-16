@@ -1,0 +1,105 @@
+# Multi-Turn Conversation Configuration
+# This file is independent of existing core functionality
+
+conversation_settings:
+  token_management:
+    max_tokens_per_turn: 8000
+    context_allocation:
+      system_prompt: 500
+      analysis_context: 300
+      conversation_history: 1200
+      current_query: 500
+      response_buffer: 5500
+    
+    optimization:
+      max_message_length: 400  # tokens per message
+      max_conversation_turns: 20
+      sliding_window_size: 6   # messages to keep
+      enable_summarization: true
+      summarization_threshold: 8  # turns before summarizing
+  
+  session_management:
+    timeout_minutes: 120
+    cleanup_interval_minutes: 15
+    max_concurrent_sessions: 100
+    enable_session_persistence: false  # MVP: in-memory only
+  
+  response_quality:
+    max_response_tokens: 1000  # Fallback for non-JSON responses
+    max_initial_analysis_tokens: 12000  # Turn 1: Full comprehensive analysis
+    max_followup_analysis_tokens: 8000   # Turn 2+: Focused analysis with context management
+    enable_response_truncation: true
+    enable_smart_context_management: true  # Turn 2+ context optimization
+    require_financial_focus: true
+    enable_disclaimer_injection: true
+
+# Integration settings - how conversation system connects to existing components
+integration:
+  use_existing_agents: true
+  reuse_analysis_results: true
+  preserve_cli_functionality: true
+  api_compatibility_mode: true
+
+# Sample prompts for easy user access
+sample_prompts:
+  stock_analysis:
+    - title: "NVIDIA Anomaly Deep Dive"
+      description: "Comprehensive analysis of NVIDIA stock price anomalies"
+      template: "Analyze {company} stock price anomalies for mid-term trading opportunities. Focus on news-driven events and fundamental analysis for 3-6 month holding period."
+      variables: ["company"]
+      category: "Technical Analysis"
+    
+    - title: "Risk Assessment Framework"
+      description: "Detailed risk analysis for investment decisions"
+      template: "Provide a comprehensive risk assessment for {company} stock. Include downside scenarios, stop-loss recommendations, and risk mitigation strategies for a moderate risk portfolio."
+      variables: ["company"]
+      category: "Risk Management"
+    
+    - title: "Earnings Correlation Analysis"
+      description: "Analyze correlation between anomalies and earnings"
+      template: "Analyze the correlation between price anomalies in {company} and their earnings announcements. What patterns emerge and how can they inform trading decisions?"
+      variables: ["company"]
+      category: "Fundamental Analysis"
+  
+  market_analysis:
+    - title: "Sector Comparison"
+      description: "Compare stock performance within sector context"
+      template: "Compare {company} anomalies with sector peers. How does this stock's volatility compare to the broader {sector} sector?"
+      variables: ["company", "sector"]
+      category: "Comparative Analysis"
+    
+    - title: "Market Regime Analysis"
+      description: "Analyze performance in different market conditions"
+      template: "How do {company} anomalies correlate with overall market conditions? Analyze performance in bull, bear, and sideways markets."
+      variables: ["company"]
+      category: "Market Context"
+
+# UI Configuration
+ui_settings:
+  streamlit:
+    page_title: "Financial Analyst AI - Multi-Turn Conversations"
+    page_icon: "💰"
+    layout: "wide"
+    initial_sidebar_state: "expanded"
+    
+  chat_interface:
+    max_messages_display: 50
+    enable_message_export: true
+    auto_scroll: true
+    show_token_usage: true
+    
+  file_upload:
+    allowed_extensions: [".csv", ".xlsx", ".xls"]
+    max_file_size_mb: 10
+    preview_rows: 5
+    
+  admin_panel:
+    require_admin_password: true
+    admin_password_env_var: "ADMIN_PASSWORD"
+    show_session_stats: true
+    enable_config_editing: true
+
+# Version tracking
+version: "1.0.0"
+created_date: "2025-01-15"
+description: "Multi-turn conversation configuration for financial analysis agent"
