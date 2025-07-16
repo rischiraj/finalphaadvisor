@@ -397,3 +397,15 @@ def get_all_styles() -> str:
         get_data_display_styles() +
         get_animation_styles()
     )
+
+
+# Simple functions for testing compatibility
+def get_custom_css():
+    """Get custom CSS for testing compatibility."""
+    return get_all_styles()
+
+
+def apply_custom_styles():
+    """Apply custom styles for testing compatibility."""
+    import streamlit as st
+    st.markdown(get_custom_css(), unsafe_allow_html=True)

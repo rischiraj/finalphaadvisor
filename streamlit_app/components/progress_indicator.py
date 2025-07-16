@@ -346,3 +346,46 @@ def create_conversation_progress():
     progress.add_step("Response Formatting", "Preparing final output")
     
     return progress
+
+
+# Simple methods for testing compatibility - Note: This creates a duplicate class name
+class SimpleProgressIndicator:
+    """Simple progress indicator for testing."""
+    
+    def __init__(self):
+        """Initialize progress indicator."""
+        pass
+    
+    def show_progress_bar(self, progress, message=""):
+        """Show progress bar."""
+        st.progress(progress)
+        if message:
+            st.write(message)
+    
+    def show_step_progress(self, steps, current_step):
+        """Show step progress."""
+        total_steps = len(steps)
+        progress = (current_step + 1) / total_steps if total_steps > 0 else 0
+        st.progress(progress)
+        
+        st.write(f"Step {current_step + 1} of {total_steps}: {steps[current_step] if current_step < len(steps) else 'Complete'}")
+    
+    def show_spinner(self, message="Loading..."):
+        """Show spinner context manager."""
+        return st.spinner(message)
+    
+    def show_success_message(self, message):
+        """Show success message."""
+        st.success(message)
+    
+    def show_error_message(self, message):
+        """Show error message."""
+        st.error(message)
+    
+    def show_info_message(self, message):
+        """Show info message."""
+        st.info(message)
+
+
+# Alias for backward compatibility
+ProgressIndicator = SimpleProgressIndicator

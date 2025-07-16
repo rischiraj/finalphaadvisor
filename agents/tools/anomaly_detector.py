@@ -384,83 +384,84 @@ class AnomalyDetectionTool:
         
         return result
     
-    def _create_structured_anomaly_points(
-        self, 
-        anomaly_indices: List[int], 
-        data: TimeSeriesData,
-        method_used: str
-    ) -> List[StructuredAnomalyPoint]:
-        """
-        Create structured anomaly points in the format expected by enhanced suggestion agent.
-        
-        Args:
-            anomaly_indices: Indices of detected anomalies
-            data: Original time-series data
-            method_used: Detection method used
-            
-        Returns:
-            List[StructuredAnomalyPoint]: Structured anomaly points with severity, deviation scores, and trends
-        """
-        if not anomaly_indices:
-            return []
-        
-        series = pd.Series(data.values)
-        structured_points = []
-        
-        # Calculate statistics for severity assessment
-        mean_val = series.mean()
-        std_val = series.std()
-        median_val = series.median()
-        
-        for idx in anomaly_indices:
-            value = data.values[idx]
-            timestamp = data.timestamp[idx]
-            
-            # Calculate deviation score based on method
-            if method_used == 'z-score':
-                deviation_score = abs(value - mean_val) / std_val if std_val > 0 else 0
-            elif method_used in ['iqr', 'rolling-iqr']:
-                # Use IQR-based deviation
-                Q1 = series.quantile(0.25)
-                Q3 = series.quantile(0.75)
-                IQR = Q3 - Q1
-                if value < Q1:
-                    deviation_score = abs(Q1 - value) / IQR if IQR > 0 else 0
-                elif value > Q3:
-                    deviation_score = abs(value - Q3) / IQR if IQR > 0 else 0
-                else:
-                    deviation_score = 0
-            else:  # dbscan or other methods
-                deviation_score = abs(value - median_val) / std_val if std_val > 0 else 0
-            
-            # Determine severity based on deviation score
-            if deviation_score > 3:
-                severity = 'high'
-            elif deviation_score > 2:
-                severity = 'medium'
-            else:
-                severity = 'low'
-            
-            # Determine trend by looking at surrounding values
-            trend = self._determine_trend(idx, series)
-            
-            structured_point = StructuredAnomalyPoint(
-                timestamp=timestamp.isoformat(),
-                value=float(value),
-                severity=severity,
-                deviation_score=round(deviation_score, 2),
-                trend=trend
-            )
-            
-            structured_points.append(structured_point)
-        
-        # Sort by severity and deviation score (most significant first)
-        structured_points.sort(
-            key=lambda x: (x.severity == 'high', x.severity == 'medium', x.deviation_score), 
-            reverse=True
-        )
-        
-        return structured_points
+    # Commented out - StructuredAnomalyPoint class was removed during cleanup
+    # def _create_structured_anomaly_points(
+    #     self, 
+    #     anomaly_indices: List[int], 
+    #     data: TimeSeriesData,
+    #     method_used: str
+    # ) -> List[StructuredAnomalyPoint]:
+    #     """
+    #     Create structured anomaly points in the format expected by enhanced suggestion agent.
+    #     
+    #     Args:
+    #         anomaly_indices: Indices of detected anomalies
+    #         data: Original time-series data
+    #         method_used: Detection method used
+    #         
+    #     Returns:
+    #         List[StructuredAnomalyPoint]: Structured anomaly points with severity, deviation scores, and trends
+    #     """
+    #     if not anomaly_indices:
+    #         return []
+    #     
+    #     series = pd.Series(data.values)
+    #     structured_points = []
+    #     
+    #     # Calculate statistics for severity assessment
+    #     mean_val = series.mean()
+    #     std_val = series.std()
+    #     median_val = series.median()
+    #     
+    #     for idx in anomaly_indices:
+    #         value = data.values[idx]
+    #         timestamp = data.timestamp[idx]
+    #         
+    #         # Calculate deviation score based on method
+    #         if method_used == 'z-score':
+    #             deviation_score = abs(value - mean_val) / std_val if std_val > 0 else 0
+    #         elif method_used in ['iqr', 'rolling-iqr']:
+    #             # Use IQR-based deviation
+    #             Q1 = series.quantile(0.25)
+    #             Q3 = series.quantile(0.75)
+    #             IQR = Q3 - Q1
+    #             if value < Q1:
+    #                 deviation_score = abs(Q1 - value) / IQR if IQR > 0 else 0
+    #             elif value > Q3:
+    #                 deviation_score = abs(value - Q3) / IQR if IQR > 0 else 0
+    #             else:
+    #                 deviation_score = 0
+    #         else:  # dbscan or other methods
+    #             deviation_score = abs(value - median_val) / std_val if std_val > 0 else 0
+    #         
+    #         # Determine severity based on deviation score
+    #         if deviation_score > 3:
+    #             severity = 'high'
+    #         elif deviation_score > 2:
+    #             severity = 'medium'
+    #         else:
+    #             severity = 'low'
+    #         
+    #         # Determine trend by looking at surrounding values
+    #         trend = self._determine_trend(idx, series)
+    #         
+    #         structured_point = StructuredAnomalyPoint(
+    #             timestamp=timestamp.isoformat(),
+    #             value=float(value),
+    #             severity=severity,
+    #             deviation_score=round(deviation_score, 2),
+    #             trend=trend
+    #         )
+    #         
+    #         structured_points.append(structured_point)
+    #     
+    #     # Sort by severity and deviation score (most significant first)
+    #     structured_points.sort(
+    #         key=lambda x: (x.severity == 'high', x.severity == 'medium', x.deviation_score), 
+    #         reverse=True
+    #     )
+    #     
+    #     return structured_points
     
     def _determine_trend(self, idx: int, series: pd.Series, window: int = 3) -> str:
         """
