@@ -184,3 +184,85 @@ class LLMDebugCallback(BaseCallbackHandler):
         """Log when agent finishes."""
         self.logger.debug(f"\n[AGENT] FINISHED")
         self.logger.debug(f"[OUTPUT] Final output: {finish.return_values}")
+
+
+class LLMLogger:
+    """Simple LLM logger for testing compatibility."""
+    
+    def __init__(self, settings):
+        """Initialize the LLM logger."""
+        self.settings = settings
+        self.session_logs = {}
+        self.logger = logging.getLogger("llm_logger")
+    
+    def log_request(self, session_id, request_data):
+        """Log LLM request."""
+        if session_id not in self.session_logs:
+            self.session_logs[session_id] = []
+        
+        self.session_logs[session_id].append({
+            "type": "request",
+            "timestamp": datetime.now().isoformat(),
+            "data": request_data
+        })
+        
+        self.logger.debug(f"[REQUEST] Session {session_id}: {request_data}")
+    
+    def log_response(self, session_id, response_data):
+        """Log LLM response."""
+        if session_id not in self.session_logs:
+            self.session_logs[session_id] = []
+        
+        self.session_logs[session_id].append({
+            "type": "response",
+            "timestamp": datetime.now().isoformat(),
+            "data": response_data
+        })
+        
+        self.logger.debug(f"[RESPONSE] Session {session_id}: {response_data}")
+    
+    def get_session_logs(self, session_id):
+        """Get logs for a session."""
+        return self.session_logs.get(session_id, [])
+    
+    def get_session_stats(self, session_id):
+        """Get statistics for a session."""
+        logs = self.get_session_logs(session_id)
+        
+        requests = [log for log in logs if log["type"] == "request"]
+        responses = [log for log in logs if log["type"] == "response"]
+        
+        total_tokens = sum(
+            log["data"].get("usage", {}).get("tokens", 0) 
+            for log in responses
+        )
+        
+        response_times = [
+            log["data"].get("response_time", 0) 
+            for log in responses
+        ]
+        
+        return {
+            "total_requests": len(requests),
+            "total_responses": len(responses),
+            "total_tokens": total_tokens,
+            "avg_response_time": sum(response_times) / len(response_times) if response_times else 0
+        }
+    
+    def clear_session_logs(self, session_id):
+        """Clear logs for a session."""
+        if session_id in self.session_logs:
+            del self.session_logs[session_id]
+    
+    def export_logs(self, session_id):
+        """Export logs for a session."""
+        logs = self.get_session_logs(session_id)
+        
+        export_data = {
+            "session_id": session_id,
+            "logs": logs,
+            "stats": self.get_session_stats(session_id)
+        }
+        
+        import json
+        return json.dumps(export_data, indent=2)

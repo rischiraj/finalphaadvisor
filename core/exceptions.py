@@ -37,7 +37,7 @@ class AnomalyDetectionMethodError(AnomalyDetectionError):
     """
     def __init__(self, message: str, method: str = None):
         self.method = method
-        super().__init__(message, "ANOMALY_METHOD_ERROR")
+        super().__init__(message, "ANOMALY_DETECTION_METHOD_ERROR")
 
 
 class VisualizationError(AnomalyDetectionError):

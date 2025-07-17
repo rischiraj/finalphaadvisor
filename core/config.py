@@ -106,8 +106,8 @@ class Settings(BaseSettings):
         case_sensitive = False
 
 
-# Global settings instance
-settings = Settings()
+# Global settings instance - lazy initialization
+_settings = None
 
 
 def get_settings() -> Settings:
@@ -117,4 +117,7 @@ def get_settings() -> Settings:
     Returns:
         Settings: The application settings.
     """
-    return settings
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings

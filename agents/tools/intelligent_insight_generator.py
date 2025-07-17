@@ -54,6 +54,7 @@ class EnhancedInsightResponse:
     trading_signals: List[Dict[str, Any]]
     risk_assessment: Dict[str, Any]
     confidence_score: int
+    raw_json_response: Optional[str] = None
 
 
 class IntelligentInsightGenerator:
@@ -156,7 +157,8 @@ class IntelligentInsightGenerator:
                 actionable_insights=insights.get('actionable_insights', []),
                 trading_signals=trading_signals,
                 risk_assessment=risk_assessment,
-                confidence_score=insights.get('confidence_score', 75)
+                confidence_score=insights.get('confidence_score', 75),
+                raw_json_response=insights.get('raw_json_response')
             )
             
             self.logger.info("Intelligent insight generation completed successfully")
@@ -484,7 +486,12 @@ class IntelligentInsightGenerator:
         
         try:
             response = await self.llm.ainvoke(messages)
-            return self._parse_intelligent_response(response.content)
+            # Store the raw response content before parsing
+            raw_response_content = response.content
+            parsed_response = self._parse_intelligent_response(raw_response_content)
+            # Add the raw response to the parsed result
+            parsed_response['raw_json_response'] = raw_response_content
+            return parsed_response
         except Exception as e:
             self.logger.error(f"Failed to generate actionable insights: {str(e)}")
             return {

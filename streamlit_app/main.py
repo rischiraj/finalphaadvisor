@@ -47,14 +47,21 @@ from components import (
 from components.analysis_renderer import render_analysis_single_container
 
 # Configure Streamlit page
+try:
+    # Try to use the actual logo as favicon
+    logo_path = Path(__file__).parent / "resources" / "logo.png"
+    page_icon = str(logo_path) if logo_path.exists() else "📊"
+except Exception:
+    page_icon = "📊"
+
 st.set_page_config(
     page_title="FinAlphaAdvisor",
-    page_icon="📊",
+    page_icon=page_icon,
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://github.com/your-repo',
-        'Report a bug': "https://github.com/your-repo/issues",
+        'Get Help': 'https://github.com/rischiraj/finalphaadvisor',
+        'Report a bug': "https://github.com/rischiraj/finalphaadvisor/issues",
         'About': "# FinAlphaAdvisor\n\nFinAlpha Advisor is an enterprise AI agent that flags outliers across your financial dashboards and instantly explains them through relevant macroeconomic headlines or micro‑level corporate events—so you can turn raw anomalies into alpha‑driving decisions."
     }
 )
@@ -63,9 +70,30 @@ st.set_page_config(
 st.markdown(get_all_styles(), unsafe_allow_html=True)
 
 def main():
-    # Main header
-    st.markdown('<h1 class="main-header">📊 FinAlphaAdvisor</h1>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #666; font-style: italic;">From anomalies to alpha—contextualized by real‑time macro insights.</p>', unsafe_allow_html=True)
+    # Main header with logo and title on same line
+    st.markdown('<div style="margin-bottom: 2rem;">', unsafe_allow_html=True)
+    
+    # Logo and title side by side, center aligned - Simple Streamlit columns
+    spacer1, logo_col, title_col, spacer2 = st.columns([2, 1, 3, 2])
+    
+    with logo_col:
+        try:
+            logo_path = Path(__file__).parent / "resources" / "logo.png"
+            if logo_path.exists():
+                st.image(str(logo_path), width=100)
+                st.markdown('<style>.element-container img { margin-left: 6.0rem; display: block; }</style>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div style="font-size: 4rem; text-align: center;">📊</div>', unsafe_allow_html=True)
+        except Exception:
+            st.markdown('<div style="font-size: 4rem; text-align: center;">📊</div>', unsafe_allow_html=True)
+    
+    with title_col:
+        st.markdown('<h1 style="margin-top: 1.5rem; text-align: left; font-size: 2.8rem; color: #1f77b4; font-weight: bold;">FinAlphaAdvisor</h1>', unsafe_allow_html=True)
+    
+    # Subtitle centered below both logo and title
+    st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #666; font-style: italic; margin-top: 0.5rem;">From anomalies to alpha—contextualized by real‑time macro insights.</p>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Check if API is available
     api_status = check_api_status()
@@ -343,15 +371,24 @@ def show_conversation_page():
     col1, col2 = st.columns([3, 1])
     
     with col1:
-        # Check if we have a preset prompt from sample questions
+        # Handle preset prompts and clearing
+        if st.session_state.get('clear_input', False):
+            # Clear the session state value
+            if 'user_input_main' in st.session_state:
+                del st.session_state['user_input_main']
+            del st.session_state['clear_input']
+            st.rerun()
+        
+        # Set initial value for text area
         initial_value = ""
         if 'preset_prompt' in st.session_state:
             initial_value = st.session_state['preset_prompt']
-            del st.session_state['preset_prompt']  # Clear it after using
+            # Store in session state for text area
+            st.session_state['user_input_main'] = initial_value
+            del st.session_state['preset_prompt']
             
         user_input = st.text_area(
             "Ask your financial analysis question:",
-            value=initial_value,
             height=100,
             placeholder="e.g., 'Analyze NVIDIA stock anomalies' or 'What are the risks of this investment?'",
             key="user_input_main"
@@ -366,7 +403,8 @@ def show_conversation_page():
             
             st.markdown("📊 Chart Download")
             if st.session_state.get('last_plot_filename'):
-                download_latest_chart(st.session_state['last_plot_filename'])
+                if st.button("📥 Download Latest Chart", use_container_width=True):
+                    download_latest_chart(st.session_state['last_plot_filename'])
             else:
                 st.info("No chart available yet. Run file analysis first.")
             
@@ -472,11 +510,16 @@ def show_conversation_page():
                     
                     # Clear progress and show result
                     progress_container.empty()
+                    
+                    # Clear the text area by setting a flag
+                    st.session_state['clear_input'] = True
                     st.rerun()
                     
                 except Exception as e:
                     message_progress.fail_step(message_progress.current_step, f"Error: {str(e)}")
                     message_progress.render(progress_container)
+            else:
+                st.warning("Please enter a message before sending!")
     
     # Show sample questions if requested
     if st.session_state.get('show_sample_questions'):
@@ -774,29 +817,25 @@ def get_ai_response(message):
         import requests
         
         # Check if we have an existing conversation session
-        if 'conversation_id' in st.session_state:
+        if 'conversation_session_id' in st.session_state:
             # Continue existing conversation
-            response = requests.post(
-                f"http://localhost:8000/api/v1/conversation/{st.session_state['conversation_id']}/message",
-                json={"message": message},
-                timeout=120
-            )
+            url = f"http://localhost:8000/api/v1/conversation/{st.session_state['conversation_session_id']}/message"
+            payload = {"message": message}
+            response = requests.post(url, json=payload, timeout=120)
         else:
             # Start new conversation
-            response = requests.post(
-                "http://localhost:8000/api/v1/conversation/start",
-                json={
-                    "initial_query": message,
-                    "user_id": "streamlit_user"
-                },
-                timeout=120
-            )
+            url = "http://localhost:8000/api/v1/conversation/start"
+            payload = {
+                "initial_query": message,
+                "user_id": "streamlit_user"
+            }
+            response = requests.post(url, json=payload, timeout=120)
         
         if response.status_code == 200:
             data = response.json()
             
             # Store session info
-            st.session_state['conversation_id'] = data['session_id']
+            st.session_state['conversation_session_id'] = data['session_id']
             st.session_state['message_count'] = data['message_count']
             st.session_state['total_tokens'] = data['total_tokens']
             

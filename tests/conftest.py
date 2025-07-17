@@ -10,6 +10,9 @@ import tempfile
 import os
 from unittest.mock import AsyncMock, MagicMock
 
+# Set environment variable before importing config
+os.environ.setdefault("GOOGLE_AI_API_KEY", "test_key_12345")
+
 from core.models import TimeSeriesData, AnomalyDetectionRequest
 from core.config import Settings
 

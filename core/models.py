@@ -49,12 +49,12 @@ class TimeSeriesData(BaseModel):
             raise ValueError('All values must be finite numeric values')
         return float(v)
     
-    @validator('timestamp')
-    def validate_timestamp_length(cls, v, values):
+    @model_validator(mode='after')
+    def validate_timestamp_length(self):
         """Validate that timestamp and values have the same length."""
-        if 'values' in values and len(v) != len(values['values']):
+        if len(self.timestamp) != len(self.values):
             raise ValueError('timestamp and values must have the same length')
-        return v
+        return self
     
     @validator('timestamp')
     def validate_timestamps_sorted(cls, v):

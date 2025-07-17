@@ -420,3 +420,32 @@ def render_analysis_json(json_content: str, container=None) -> None:
     """
     viewer = AnalysisJSONViewer()
     viewer.render(json_content, container)
+
+
+class JsonViewer:
+    """Simple JSON viewer for testing compatibility."""
+    
+    def __init__(self):
+        """Initialize the JSON viewer."""
+        pass
+    
+    def render_json_data(self, data):
+        """Render JSON data."""
+        st.json(data)
+    
+    def render_formatted_json(self, data):
+        """Render formatted JSON."""
+        import json
+        formatted = json.dumps(data, indent=2)
+        st.code(formatted, language='json')
+    
+    def render_json_with_syntax_highlighting(self, data):
+        """Render JSON with syntax highlighting."""
+        import json
+        formatted = json.dumps(data, indent=2)
+        st.code(formatted, language='json')
+    
+    def render_collapsible_json(self, data, title):
+        """Render collapsible JSON sections."""
+        with st.expander(title):
+            st.json(data)

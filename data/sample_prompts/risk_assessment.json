@@ -1,0 +1,16 @@
+{
+  "title": "Comprehensive Risk Assessment",
+  "category": "Risk Management", 
+  "description": "Detailed risk analysis framework for investment decisions with portfolio impact assessment",
+  "template": "Provide a comprehensive risk assessment for this stock analysis focusing on:\n\n1. **Downside Scenario Analysis**\n   - Worst-case price targets and probability\n   - Market crash impact assessment\n   - Sector-specific risks\n\n2. **Portfolio Risk Management**\n   - Recommended position sizing (% of portfolio)\n   - Stop-loss levels and trailing strategies\n   - Correlation with existing holdings\n\n3. **Time-Based Risk Factors**\n   - Earnings announcements and dates to watch\n   - Economic calendar events\n   - Technical support/resistance levels\n\n4. **Hedging Strategies**\n   - Protective puts analysis\n   - Covered call opportunities\n   - Sector ETF hedging options\n\nTailor recommendations for moderate risk tolerance with 3-6 month investment horizon.",
+  "variables": [],
+  "follow_up_questions": [
+    "What's the maximum drawdown I should expect?",
+    "How would this position affect my portfolio's overall risk?",
+    "What are the early warning signals to exit this position?",
+    "Should I consider dollar-cost averaging into this position?"
+  ],
+  "sample_data_file": null,
+  "recommended_method": "z-score",
+  "recommended_threshold": 2.5
+}

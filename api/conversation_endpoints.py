@@ -315,19 +315,53 @@ async def analyze_and_start_conversation(
             query=initial_query
         )
         
-        # Use existing analysis workflow
-        analysis_result = await supervisor.analyze(analysis_request)
+        # Use the new method to get both structured results and raw LLM response
+        analysis_with_raw = await supervisor.analyze_with_raw_response(analysis_request)
+        analysis_result = analysis_with_raw['analysis_result']
+        raw_llm_response = analysis_with_raw['raw_llm_response']
+        
         
         # Step 3: Create conversation context from analysis
         analysis_context = AnalysisToConversationAdapter.create_context_from_analysis(
             analysis_result, str(file_path)
         )
         
-        # Step 4: Start conversation with analysis context
-        conversation_result = await start_conversation_with_query(
-            initial_query=initial_query,
-            analysis_context=analysis_context
+        # Step 4: Create conversation session directly using analysis results
+        # This avoids the redundant 2nd LLM call in start_conversation_with_query
+        session_id = conversation_manager.create_session(
+            analysis_context=analysis_context,
+            user_id=None
         )
+        
+        # Extract the comprehensive response from 1st LLM call
+        if raw_llm_response:
+            # Use the raw JSON response from the 1st LLM call
+            initial_response = raw_llm_response
+        elif analysis_context.get("full_insights"):
+            # Fallback to summary from analysis context
+            initial_response = analysis_context["full_insights"]["summary"]
+        else:
+            # Final fallback to basic analysis info
+            initial_response = f"Analysis completed. Found {analysis_context['anomaly_count']} anomalies out of {analysis_context['total_points']} data points using {analysis_context['method']} method."
+        
+        # Add messages to session (automatically calculates tokens)
+        conversation_manager.add_message(session_id, "user", initial_query)
+        conversation_manager.add_message(session_id, "assistant", initial_response)
+        
+        # Get accurate token count from session
+        session_info = conversation_manager.get_session_info(session_id)
+        
+        # Create conversation result using 1st LLM call data
+        conversation_result = {
+            "response": initial_response,
+            "session_id": session_id,
+            "message_count": 2,
+            "total_tokens": session_info["total_tokens"] if session_info else 0,
+            "processing_time_ms": analysis_result.processing_time,  # From 1st LLM call
+            "is_initial_analysis": True,
+            "error": None,
+            "success": True
+        }
         
         processing_time = int((time.time() - start_time) * 1000)
         
