@@ -1,0 +1,16 @@
+{
+  "title": "NVIDIA Comprehensive Analysis",
+  "category": "Stock Analysis",
+  "description": "Deep dive analysis of NVIDIA stock price anomalies with focus on AI market trends and earnings correlation",
+  "template": "Analyze NVIDIA 1 year stock price anomalies for mid-term trading opportunities. Focus on:\n\n1. AI market trends and their impact on NVIDIA's valuation\n2. Correlation with semiconductor sector performance\n3. News-driven events and fundamental analysis for 3-6 month holding period\n4. Risk assessment considering GPU demand volatility\n\nProvide specific entry points, price targets, and risk management strategies suitable for moderate risk tolerance.",
+  "variables": [],
+  "follow_up_questions": [
+    "What's the correlation between NVIDIA anomalies and AI sector news?",
+    "How do these anomalies compare to AMD and Intel patterns?",
+    "What are the key risk factors for NVIDIA in the next 6 months?",
+    "Should I consider options strategies for NVIDIA positions?"
+  ],
+  "sample_data_file": "NVDA_1Y_FROM_PERPLEXITY.csv",
+  "recommended_method": "rolling-iqr",
+  "recommended_threshold": 1.5
+}

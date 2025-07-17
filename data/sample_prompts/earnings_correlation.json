@@ -1,0 +1,16 @@
+{
+  "title": "Earnings Correlation Analysis",
+  "category": "Fundamental Analysis",
+  "description": "Analysis of price anomalies correlation with earnings events and financial metrics",
+  "template": "Analyze the correlation between price anomalies and earnings events for this stock:\n\n1. **Earnings Event Analysis**\n   - Pre-earnings price movement patterns\n   - Post-earnings volatility and direction\n   - Earnings surprise correlation with anomalies\n\n2. **Financial Metrics Impact**\n   - Revenue growth correlation with price spikes\n   - Margin expansion/contraction effects\n   - Forward guidance impact on anomalies\n\n3. **Seasonal Patterns**\n   - Quarterly earnings cycle patterns\n   - Holiday/seasonal business impact\n   - Conference and investor day effects\n\n4. **Trading Strategy Development**\n   - Pre-earnings positioning strategies\n   - Post-earnings momentum plays\n   - Long-term value opportunities\n\nFocus on actionable insights for the next 2-3 earnings cycles with specific entry/exit timing.",
+  "variables": [],
+  "follow_up_questions": [
+    "When is the next earnings announcement and what should I expect?",
+    "How have previous earnings surprises affected the stock price?",
+    "What are the key metrics to watch in upcoming earnings?",
+    "Should I hold through earnings or exit before the announcement?"
+  ],
+  "sample_data_file": null,
+  "recommended_method": "rolling-iqr",
+  "recommended_threshold": 1.8
+}

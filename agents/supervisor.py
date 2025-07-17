@@ -422,6 +422,45 @@ class AnomalyDetectionSupervisor:
                 raise
             raise AgentError(f"Supervisor workflow failed: {str(e)}", "supervisor")
     
+    async def analyze_with_raw_response(self, request: AnomalyDetectionRequest) -> Dict[str, Any]:
+        """
+        Run analysis and return both structured results and raw LLM response.
+        This is a non-breaking addition for analyze-and-chat workflow.
+        
+        Args:
+            request: Anomaly detection request
+            
+        Returns:
+            Dict containing both analysis_result and raw_llm_response
+            
+        Raises:
+            AgentError: If analysis fails
+        """
+        try:
+            # Use existing analyze method to get structured results
+            analysis_result = await self.analyze(request)
+            
+            # Extract raw response from enhanced suggestion agent
+            raw_response = None
+            if self.suggestion_agent and hasattr(self.suggestion_agent, '_current_enhanced_insights'):
+                enhanced_insights = self.suggestion_agent._current_enhanced_insights
+                
+                # Check if it's an EnhancedInsightResponse object with raw_json_response attribute
+                if hasattr(enhanced_insights, 'raw_json_response'):
+                    raw_response = enhanced_insights.raw_json_response
+                # Fallback: Check if it's a dictionary
+                elif isinstance(enhanced_insights, dict) and 'raw_json_response' in enhanced_insights:
+                    raw_response = enhanced_insights['raw_json_response']
+            
+            return {
+                'analysis_result': analysis_result,
+                'raw_llm_response': raw_response
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Analysis with raw response failed: {str(e)}")
+            raise AgentError(f"Analysis with raw response failed: {str(e)}", "supervisor")
+    
     async def analyze_with_streaming(
         self, 
         request: AnomalyDetectionRequest,

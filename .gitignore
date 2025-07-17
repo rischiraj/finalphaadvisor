@@ -8,5 +8,5 @@ extrapy
 proj_artifacts
 notused
 logs
-data
-outputs
+CLAUDE.md
+.claude

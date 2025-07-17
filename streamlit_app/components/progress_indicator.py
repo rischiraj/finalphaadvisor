@@ -387,5 +387,5 @@ class SimpleProgressIndicator:
         st.info(message)
 
 
-# Alias for backward compatibility
-ProgressIndicator = SimpleProgressIndicator
+# Note: ProgressIndicator and SimpleProgressIndicator are separate classes
+# Use ProgressIndicator for full functionality, SimpleProgressIndicator for basic use

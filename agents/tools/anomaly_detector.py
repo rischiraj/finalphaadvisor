@@ -377,10 +377,10 @@ class AnomalyDetectionTool:
             anomaly_timestamps=anomaly_timestamps
         )
         
-        # Add structured anomaly points for enhanced suggestion agent
-        result.structured_anomaly_points = self._create_structured_anomaly_points(
-            anomaly_indices, data, method_used
-        )
+        # Note: structured_anomaly_points functionality was removed during cleanup
+        # result.structured_anomaly_points = self._create_structured_anomaly_points(
+        #     anomaly_indices, data, method_used
+        # )
         
         return result
     
