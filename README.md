@@ -175,7 +175,7 @@ python -m streamlit run streamlit_app/main.py
 python -m api.main
 
 # Or with uvicorn
-uvicorn api.main:app --reload --host 0.0.0.0 --port 8000
+s
 ```
 
 **Access the API documentation at: http://localhost:8000/docs**

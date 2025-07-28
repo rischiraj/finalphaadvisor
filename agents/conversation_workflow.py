@@ -106,6 +106,10 @@ class ConversationWorkflow:
                 state.llm_response = "I'm currently unable to process your request. Please try again later."
                 return state
             
+            # Set session context for LLM logging continuity
+            if hasattr(self.enhanced_agent, 'set_session_context'):
+                self.enhanced_agent.set_session_context(state.session_id)
+            
             # Use the existing agent's conversation capability
             # This will use the same system prompts and LLM setup as the proven system
             response = await self.enhanced_agent.generate_conversation_response(

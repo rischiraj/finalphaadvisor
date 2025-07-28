@@ -2,11 +2,11 @@ venv
 venv_linux
 client_venv
 __pycache__
+.claude
 .ruff_cache
+CLAUDE.md
 .pytest_cache
 extrapy
 proj_artifacts
 notused
 logs
-CLAUDE.md
-.claude

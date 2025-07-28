@@ -72,6 +72,20 @@ class EnhancedSuggestionAgent:
         
         self.logger.info("Enhanced suggestion agent initialized successfully")
     
+    def set_session_context(self, session_id: str):
+        """Set session context for LLM logging to maintain call count continuity."""
+        try:
+            # Find LLMDebugCallback in the LLM's callbacks
+            if hasattr(self.llm, 'callbacks') and self.llm.callbacks:
+                for callback in self.llm.callbacks:
+                    if hasattr(callback, 'set_session_id'):
+                        callback.set_session_id(session_id)
+                        self.logger.debug(f"Set session context for enhanced agent: {session_id}")
+                        return
+            self.logger.debug("No LLMDebugCallback found in enhanced agent")
+        except Exception as e:
+            self.logger.warning(f"Failed to set session context: {e}")
+    
     def _create_tools(self):
         """
         Create LangChain tools for intelligent insight generation.

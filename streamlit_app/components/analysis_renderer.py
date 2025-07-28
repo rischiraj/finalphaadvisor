@@ -148,8 +148,12 @@ def render_analysis_single_container(json_content: str) -> None:
             rating = confidence.get('rating', 0)
             if isinstance(rating, str):
                 try:
+                    # Handle formats like "75/100", "75", or "75%"
+                    if '/' in rating:
+                        rating = rating.split('/')[0]  # Extract "75" from "75/100"
+                    rating = rating.replace('%', '')  # Remove % if present
                     rating = int(rating)
-                except ValueError:
+                except (ValueError, IndexError):
                     rating = 0
             
             content_parts.append(f"**🎯 Confidence Score: {rating}/100**")

@@ -110,6 +110,31 @@ def main():
             st.error("❌ API Unavailable")
             st.warning("Please start the FastAPI server:\n```bash\nuvicorn api.main:app --reload\n```")
         
+        # Session Information
+        if 'conversation_session_id' in st.session_state:
+            st.markdown("### 💬 Session Info")
+            st.info(f"**Session ID:** {st.session_state['conversation_session_id'][:8]}...")
+            
+            if 'message_count' in st.session_state:
+                st.metric("Messages", st.session_state['message_count'])
+            
+            if 'total_tokens' in st.session_state:
+                st.metric("Tokens Used", st.session_state['total_tokens'])
+            
+            if st.button("🔄 New Session", use_container_width=True):
+                clear_session()
+                st.rerun()
+        else:
+            # Debug: Show why session info isn't showing
+            st.markdown("### 🔍 Debug: Session Status")
+            session_keys = [k for k in st.session_state.keys() if 'session' in k.lower() or 'conversation' in k.lower()]
+            if session_keys:
+                st.write("**Session-related keys found:**")
+                for key in session_keys:
+                    st.write(f"- {key}: {str(st.session_state[key])[:50]}...")
+            else:
+                st.write("**No session keys found in session state**")
+        
         st.markdown("### 🚀 Get Started")
         
         if st.button("💬 Start Conversation", use_container_width=True):
@@ -894,10 +919,16 @@ def analyze_file_and_start_chat(file, method, threshold, query):
         
         # Prepare file for upload
         files = {'uploaded_file': (file.name, file.getvalue(), file.type)}
+        # Debug session continuation
+        existing_session = st.session_state.get('conversation_session_id', '')
+        logger.info(f"🔍 File analysis - Existing session ID: {existing_session}")
+        logger.info(f"🔍 Current conversation history length: {len(st.session_state.get('conversation_history', []))}")
+        
         data = {
             'method': method,
             'threshold': threshold,
-            'initial_query': query
+            'initial_query': query,
+            'existing_session_id': existing_session
         }
         
         # Call the analyze-and-chat API endpoint
@@ -911,9 +942,13 @@ def analyze_file_and_start_chat(file, method, threshold, query):
         if response.status_code == 200:
             result = response.json()
             
-            # Store conversation info
-            st.session_state['conversation_id'] = result['conversation']['session_id']
-            st.session_state['message_count'] = result['conversation']['message_count']
+            # Store conversation info using consistent session key
+            returned_session_id = result['conversation']['session_id']
+            st.session_state['conversation_session_id'] = returned_session_id
+            logger.info(f"🔍 Stored session ID from API response: {returned_session_id}")
+            logger.info(f"🔍 Session continuation: {result.get('conversation', {}).get('existing_session_continued', False)}")
+            logger.info(f"🔍 Session state after setting: {st.session_state.get('conversation_session_id', 'NOT_FOUND')}")
+            # message_count will be updated later with all messages
             
             # Extract and store plot filename for download functionality
             if 'analysis_result' in result and 'visualization' in result['analysis_result']:
@@ -926,24 +961,45 @@ def analyze_file_and_start_chat(file, method, threshold, query):
                 # Log for debugging
                 logger.info(f"Stored plot filename for download: {plot_filename}")
             
-            # Set up conversation history with analysis result
-            # Store the clean JSON response directly for proper rendering
-            st.session_state['conversation_history'] = [
-                {
-                    'role': 'assistant',
-                    'content': result['conversation']['initial_response'],  # Direct JSON response
-                    'file_analysis_metadata': {
-                        'file_name': file.name,
-                        'method_used': result['analysis_result']['method_used'],
-                        'total_points': result['analysis_result']['total_points'],
-                        'anomaly_count': result['analysis_result']['anomaly_count'],
-                        'anomaly_percentage': result['analysis_result']['anomaly_percentage'],
-                        'original_name': result['file_info']['original_name'],
-                        'file_size': result['file_info']['file_size'],
-                        'processing_time_ms': result['processing_time_ms']
-                    }
+            # Set up conversation history with analysis result - PRESERVE EXISTING CHAT
+            # Initialize conversation history if it doesn't exist
+            if 'conversation_history' not in st.session_state:
+                st.session_state['conversation_history'] = []
+            
+            # Add user query for the file analysis to show continuity
+            st.session_state['conversation_history'].append({
+                'role': 'user',
+                'content': f"📊 Analyze file: {file.name} using {result['analysis_result']['method_used']} method (threshold: {threshold})"
+            })
+            
+            # Add analysis result to existing conversation
+            st.session_state['conversation_history'].append({
+                'role': 'assistant',
+                'content': result['conversation']['initial_response'],  # Direct JSON response
+                'file_analysis_metadata': {
+                    'file_name': file.name,
+                    'method_used': result['analysis_result']['method_used'],
+                    'total_points': result['analysis_result']['total_points'],
+                    'anomaly_count': result['analysis_result']['anomaly_count'],
+                    'anomaly_percentage': result['analysis_result']['anomaly_percentage'],
+                    'original_name': result['file_info']['original_name'],
+                    'file_size': result['file_info']['file_size'],
+                    'processing_time_ms': result['processing_time_ms']
                 }
-            ]
+            })
+            
+            # Update conversation metrics to include all messages
+            st.session_state['message_count'] = len(st.session_state['conversation_history'])
+            
+            # Use API's token count if available, otherwise calculate from content
+            api_token_count = result.get('conversation', {}).get('total_tokens')
+            if api_token_count:
+                st.session_state['total_tokens'] = api_token_count
+                logger.info(f"🔍 Used API token count: {api_token_count}")
+            else:
+                # Fallback to character-based estimation
+                st.session_state['total_tokens'] = sum(len(msg['content'])//4 for msg in st.session_state['conversation_history'])
+                logger.info(f"🔍 Used estimated token count: {st.session_state['total_tokens']}")
             return True
         else:
             st.error(f"❌ API Error ({response.status_code}): {response.text}")
@@ -968,7 +1024,7 @@ def analyze_file_and_start_chat(file, method, threshold, query):
 
 def clear_session():
     """Clear conversation session."""
-    keys_to_clear = ['conversation_history', 'conversation_id', 'message_count', 'total_tokens']
+    keys_to_clear = ['conversation_history', 'conversation_session_id', 'message_count', 'total_tokens']
     for key in keys_to_clear:
         if key in st.session_state:
             del st.session_state[key]
