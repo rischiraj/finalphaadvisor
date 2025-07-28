@@ -276,6 +276,7 @@ async def analyze_and_start_conversation(
     method: str = Form("rolling-iqr", description="Anomaly detection method"),
     threshold: float = Form(1.5, description="Detection threshold"),
     initial_query: str = Form("Analyze these results for trading opportunities", description="Initial conversation query"),
+    existing_session_id: str = Form("", description="Existing session ID to continue conversation"),
     supervisor: SupervisorDep = None,
     settings: ValidatedSettingsDep = None,
     logger: LoggerDep = None
@@ -326,12 +327,39 @@ async def analyze_and_start_conversation(
             analysis_result, str(file_path)
         )
         
-        # Step 4: Create conversation session directly using analysis results
-        # This avoids the redundant 2nd LLM call in start_conversation_with_query
-        session_id = conversation_manager.create_session(
-            analysis_context=analysis_context,
-            user_id=None
-        )
+        # Step 4: Create or continue conversation session
+        # Check if existing session provided and valid
+        if existing_session_id and existing_session_id.strip():
+            existing_session = conversation_manager.get_session(existing_session_id)
+            if existing_session:
+                session_id = existing_session_id
+                logger.info(f"✅ Continuing existing conversation session: {session_id}")
+                logger.info(f"Existing session has {len(existing_session.messages) if hasattr(existing_session, 'messages') else 0} messages")
+                
+                # Update the existing session with new analysis context
+                if hasattr(existing_session, 'analysis_context') and existing_session.analysis_context is not None:
+                    # Merge or update analysis context
+                    existing_session.analysis_context.update(analysis_context)
+                    logger.info("Updated existing session analysis context")
+                else:
+                    # Set analysis context if it doesn't exist
+                    existing_session.analysis_context = analysis_context
+                    logger.info("Set new analysis context for existing session")
+            else:
+                logger.warning(f"❌ Existing session {existing_session_id} not found, creating new session")
+                # Create new session as existing one not found
+                session_id = conversation_manager.create_session(
+                    analysis_context=analysis_context,
+                    user_id=None
+                )
+                logger.info(f"Created new conversation session: {session_id}")
+        else:
+            # Create new session as no existing session provided
+            session_id = conversation_manager.create_session(
+                analysis_context=analysis_context,
+                user_id=None
+            )
+            logger.info(f"Created new conversation session (no existing session): {session_id}")
         
         # Extract the comprehensive response from 1st LLM call
         if raw_llm_response:
@@ -348,17 +376,18 @@ async def analyze_and_start_conversation(
         conversation_manager.add_message(session_id, "user", initial_query)
         conversation_manager.add_message(session_id, "assistant", initial_response)
         
-        # Get accurate token count from session
+        # Get accurate token count from session after adding messages
         session_info = conversation_manager.get_session_info(session_id)
         
         # Create conversation result using 1st LLM call data
         conversation_result = {
             "response": initial_response,
             "session_id": session_id,
-            "message_count": 2,
+            "message_count": session_info["message_count"] if session_info else 2,
             "total_tokens": session_info["total_tokens"] if session_info else 0,
             "processing_time_ms": analysis_result.processing_time,  # From 1st LLM call
             "is_initial_analysis": True,
+            "existing_session_continued": bool(existing_session_id and conversation_manager.get_session(existing_session_id)),
             "error": None,
             "success": True
         }
@@ -380,7 +409,8 @@ async def analyze_and_start_conversation(
             "conversation": {
                 "session_id": conversation_result["session_id"],
                 "initial_response": conversation_result["response"],
-                "message_count": conversation_result["message_count"]
+                "message_count": conversation_result["message_count"],
+                "total_tokens": conversation_result["total_tokens"]
             },
             "file_info": {
                 "original_name": uploaded_file.filename,

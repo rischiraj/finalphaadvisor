@@ -13,10 +13,37 @@ from langchain_core.outputs import LLMResult
 class LLMDebugCallback(BaseCallbackHandler):
     """Custom callback handler to log all LLM interactions in detail."""
     
-    def __init__(self, logger_name: str = "llm_debug"):
+    # Class variable to track call counts per session
+    _session_call_counts = {}
+    
+    def __init__(self, logger_name: str = "llm_debug", session_id: str = None):
         """Initialize the callback handler."""
         self.logger = logging.getLogger(logger_name)
-        self.call_count = 0
+        self.session_id = session_id or "default"
+        
+        # Initialize or get existing call count for this session
+        if self.session_id not in self._session_call_counts:
+            self._session_call_counts[self.session_id] = 0
+        
+        # For backwards compatibility with non-session code
+        self.call_count = self._session_call_counts[self.session_id]
+    
+    def set_session_id(self, session_id: str):
+        """Update session ID after creation for session-aware tracking."""
+        if session_id != self.session_id:
+            # Initialize count for new session if it doesn't exist
+            if session_id not in self._session_call_counts:
+                self._session_call_counts[session_id] = 0
+            
+            self.session_id = session_id
+            self.call_count = self._session_call_counts[session_id]
+            self.logger.debug(f"LLM logger session updated to: {session_id} (call count: {self.call_count})")
+    
+    @classmethod
+    def clear_session_count(cls, session_id: str):
+        """Clear call count for a specific session (for testing/cleanup)."""
+        if session_id in cls._session_call_counts:
+            del cls._session_call_counts[session_id]
     
     def on_llm_start(
         self, 
@@ -25,7 +52,8 @@ class LLMDebugCallback(BaseCallbackHandler):
         **kwargs: Any
     ) -> None:
         """Log when LLM starts processing."""
-        self.call_count += 1
+        self._session_call_counts[self.session_id] += 1
+        self.call_count = self._session_call_counts[self.session_id]
         self.logger.debug(f"\n{'='*100}")
         self.logger.debug(f"[LLM] CALL #{self.call_count} STARTED - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         self.logger.debug(f"{'='*100}")
@@ -110,7 +138,8 @@ class LLMDebugCallback(BaseCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Log when chat model starts processing."""
-        self.call_count += 1
+        self._session_call_counts[self.session_id] += 1
+        self.call_count = self._session_call_counts[self.session_id]
         self.logger.debug(f"\n{'='*80}")
         self.logger.debug(f"[CHAT] MODEL CALL #{self.call_count} STARTED")
         self.logger.debug(f"{'='*80}")

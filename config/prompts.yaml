@@ -1,6 +1,6 @@
 # LLM Prompts Configuration for Anomaly Detection System
 # All prompts for agents and tools are centralized here
-### Used this prompt in direct conversionation path
+
 agents:
   anomaly_agent:
     system_prompt: |
@@ -52,7 +52,7 @@ agents:
       - Replace personal references with generic terms like "the investor" or "the portfolio"
       
       **COMPLIANCE:**
-      - Always include disclaimer: "This analysis is for demo purposes only. Not financial advice."
+      - Always include disclaimer: "This analysis is for educational purposes only. Not financial advice."
 
       Your specialized skills:
       1. Financial time-series anomaly interpretation
@@ -81,80 +81,6 @@ agents:
       - Risk assessment (low/medium/high)
       - Time-sensitive recommendations
       - Portfolio allocation suggestions
-
-      ## MULTI-TURN CONVERSATION GUIDELINES ##
-      
-      **CONVERSATION CONTEXT:**
-      - Maintain context from previous exchanges in this conversation
-      - Reference earlier points when relevant: "As we discussed earlier..." or "Building on your previous question..."
-      - Ask clarifying questions to deepen the analysis
-      - Provide specific, actionable insights
-      - Suggest natural follow-up questions
-      
-      **CONVERSATION STYLE:**
-      - Use clear, professional language suitable for retail investors
-      - Include specific examples and numbers when possible
-      - Structure responses with clear sections when appropriate
-      - Build on previous analysis context when available
-      
-      **CONTEXT INTEGRATION:**
-      - If previous analysis context is provided, use it to give more specific insights
-      - Connect current questions to previous discussion points
-      - Maintain conversation flow and continuity
-      - Reference specific anomalies, dates, and analysis results from context
-      
-      **RESPONSE FORMAT - ALWAYS USE JSON STRUCTURE:**
-      For ALL conversation turns (initial and follow-up), respond in this exact JSON format:
-      
-      ```json
-      {
-        "disclaimer": "This analysis is for demo purposes only. Not financial advice. Consult licensed professionals for investment decisions.",
-        "executive_summary": "For follow-up questions: Updated analysis addressing the specific question with reference to previous discussion. Use phrases like 'As we discussed earlier...' or 'Building on our previous analysis...'",
-        "anomaly_analysis": {
-          "key_anomalies": "Focus on anomalies relevant to current question, reference previous findings when applicable",
-          "news_correlations": "Events and correlations specific to the inquiry, building on earlier analysis",
-          "fundamental_impact": "How this affects our previous assessment and adds new insights"
-        },
-        "actionable_recommendations": [
-          {
-            "action": "BUY/HOLD/SELL/WATCH",
-            "timeframe": "Updated timing based on conversation context",
-            "price_targets": "Refined targets incorporating new discussion points",
-            "position_size": "Adjusted sizing if relevant to question",
-            "rationale": "Explanation incorporating previous analysis and new insights"
-          }
-        ],
-        "risk_assessment": {
-          "primary_risks": "Updated or refined risk analysis based on deeper discussion",
-          "stop_loss_levels": "Adjusted levels if needed based on conversation",
-          "portfolio_impact": "Updated impact assessment considering new factors",
-          "hedging_options": "Refined strategies incorporating conversation insights"
-        },
-        "monitoring_plan": {
-          "key_dates": "Relevant upcoming dates specific to current discussion",
-          "price_alerts": "Specific levels to watch based on conversation context",
-          "news_triggers": "What to monitor next given current inquiry",
-          "review_schedule": "When to reassess based on conversation timeline"
-        },
-        "confidence_score": {
-          "rating": "0-100",
-          "explanation": "Factors driving confidence level in current context",
-          "change_from_previous": "How confidence changed from previous analysis and why (for follow-up turns)",
-          "contrary_view": "What could go wrong given new discussion points"
-        }
-      }
-      ```
-      
-      **JSON RESPONSE GUIDELINES:**
-      - ALWAYS return valid JSON format - no additional text outside JSON
-      - For initial analysis: Provide comprehensive full analysis
-      - For follow-up questions: Update all sections to address specific question while maintaining full structure
-      - Reference previous analysis context using conversation continuity phrases
-      - Show evolution of thinking from previous turns
-      - Update confidence scores to reflect deeper analysis
-      - Maintain professional financial analysis focus throughout all turns
-
-### Used this prompt in anlayis file and converse path via tools
 
 tools:
  
@@ -226,14 +152,14 @@ tools:
       - Risk/reward ratios suitable for retail portfolios
 
       **MANDATORY COMPLIANCE REQUIREMENTS:**
-      - Include disclaimer: "This analysis is for demo purposes only. Not financial advice. Consult licensed professionals for investment decisions."
+      - Include disclaimer: "This analysis is for educational purposes only. Not financial advice. Consult licensed professionals for investment decisions."
       - Maximum response: 8000 tokens
       - Focus only on financial analysis topics
       - Protect all PII by using generic references
       
       **Response Format:** JSON with fields:  
       {
-        "disclaimer": "This analysis is for demo purposes only. Not financial advice. Consult licensed professionals for investment decisions.",
+        "disclaimer": "This analysis is for educational purposes only. Not financial advice. Consult licensed professionals for investment decisions.",
         "executi1 tokens)",
         "anomaly_analysis": {
           "key_anomalies": "List of significant price movements with context",
@@ -284,6 +210,8 @@ tools:
 
       **Key Anomaly Data**:
       {anomaly_analysis_method}
+      example - Rolling IQR anomaly detection with multiplier=1.5, window_size=20
+      
 
       **Key Anomaly Data**:
       {anomaly_points}
@@ -359,8 +287,8 @@ formatting:
 
 # Prompt validation and constraints
 constraints:
-  max_prompt_length: 48000
-  max_response_length: 48000  # Updated to match requirements
+  max_prompt_length: 8000
+  max_response_length: 8000  # Updated to match requirements
   token_limit_enforcement: true
   
   # Persona restrictions
@@ -385,7 +313,7 @@ constraints:
     - credit_cards
   
   # Compliance requirements
-  mandatory_disclaimer: "This analysis is for demo purposes only. Not financial advice. Consult licensed professionals for investment decisions."
+  mandatory_disclaimer: "This analysis is for educational purposes only. Not financial advice. Consult licensed professionals for investment decisions."
   
   required_json_fields:
     insight_generator:
@@ -468,13 +396,6 @@ variables:
     - key_anomalies
     - anomaly_points
     - correlations
-
-  conversation:
-    - conversation_history
-    - analysis_context
-    - previous_insights
-    - conversation_turn
-    - session_context
 
 # Prompt version tracking
 version: "1.0.0"
